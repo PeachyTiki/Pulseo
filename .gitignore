@@ -15,3 +15,7 @@ desktop.ini
 
 # Build artifacts
 node_modules/
+
+# Temp working folders
+DROP_ICON_HERE/
+*.b64.txt

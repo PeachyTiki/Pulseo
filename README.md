@@ -53,19 +53,22 @@ https://YOUR_USERNAME.github.io/Pulseo/
 
 ```
 Pulseo/
-├── index.html              # The entire app (single file)
+├── index.html              # The entire app (single file, ~714KB)
 ├── pulseo-clean.json       # Empty backup template (for fresh start)
 ├── apk/
 │   └── Pulseo.zip          # Ready for WebIntoApp APK builder
+├── assets/
+│   └── icons/
+│       └── pulseo-icon-512.png   # 512×512 app icon (also embedded in index.html)
 ├── PULSEO-HANDOFF.md       # Developer documentation
 ├── README.md               # You're reading this
-├── LICENSE                  # MIT License
+├── LICENSE                 # MIT License
 └── .gitignore
 ```
 
 ## 🔧 For Developers
 
-The app is a **single HTML file** (~595KB) containing all CSS, HTML, and JavaScript inline. No build tools, no dependencies, no npm.
+The app is a **single HTML file** (~714KB) containing all CSS, HTML, and JavaScript inline. No build tools, no dependencies, no npm.
 
 See [PULSEO-HANDOFF.md](PULSEO-HANDOFF.md) for:
 - Full architecture overview

@@ -134,4 +134,4 @@ fDog, togMDog, initMDog, mdSchedule, mdMove, mdQuote, mdGrab, mdDragMove, mdDrop
 - Enable localStorage ✓
 - Disable Pull to Refresh ✓
 - App name: Pulseo
-- 512x512 icon needed
+- Icon: use `assets/icons/pulseo-icon-512.png` (512×512 PNG) — also embedded in index.html as base64
