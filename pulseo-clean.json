@@ -1,0 +1,60 @@
+{
+  "habits": {},
+  "habitList": [],
+  "workouts": [],
+  "wlog": {},
+  "body": {},
+  "birthday": null,
+  "height": null,
+  "bunit": null,
+  "settings": {
+    "theme": "dark",
+    "lang": "en",
+    "notif": {
+      "habitEnabled": false,
+      "workoutEnabled": false,
+      "habitTime": "21:00",
+      "workoutMins": 15,
+      "progOL": false
+    },
+    "retro": false,
+    "mdog": false,
+    "mdogOff": false
+  },
+  "v": 7,
+  "meals": {},
+  "cfoods": [],
+  "ngoals": {
+    "cal": [
+      2000,
+      2200
+    ],
+    "p": [
+      120,
+      150
+    ],
+    "c": [
+      200,
+      300
+    ],
+    "f": [
+      50,
+      80
+    ],
+    "fb": [
+      25,
+      35
+    ]
+  },
+  "gender": "m",
+  "ntrack": [
+    "cal",
+    "p",
+    "c",
+    "f",
+    "fb"
+  ],
+  "ncalc": null,
+  "btype": null,
+  "kj": null
+}

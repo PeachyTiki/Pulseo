@@ -1,0 +1,17 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.swp
+*~
+
+# Personal data (uncomment if you don't want your data public)
+# pulseo-my-data.json
+
+# Build artifacts
+node_modules/
