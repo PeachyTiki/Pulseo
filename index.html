@@ -498,9 +498,12 @@ const DC=['#FF4D4D','#4DFF88','#4DA6FF','#FFB84D','#C77DFF','#FF6B35','#FF79C6']
 const DN=['SUN','MON','TUE','WED','THU','FRI','SAT'],MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const GROUPS=['Upper Body','Lower Body','Legs','Back','Chest','Arms','Shoulders','Abs / Core','Full Body','Cardio','Push','Pull'];
 const MILESTONES=[7,14,30,60,90,180,365];
-const N=new Date(),TD=N.toISOString().slice(0,10);let vd=TD,gf='7',lo=new Set();
+const N=new Date(),TD=ds(N);let vd=TD,gf='7',lo=new Set();
 function ld(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
-function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){if(e.name==='QuotaExceededError'||e.name==='NS_ERROR_DOM_QUOTA_REACHED')alert('Storage full — free up space by removing progress photos in the Body tab.');}}
+function encH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function encA(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+window.addEventListener('storage',()=>{try{if(cv==='h')rH();else if(cv==='w')rW();else if(cv==='b')rB();else if(cv==='s')rS()}catch(e){}});
 function gHL(){return ld('g_hl')||[]}
 function sHL(l){sv('g_hl',l)}function gHD(){return ld('g_hd')||{}}function sHD(d){sv('g_hd',d)}
 function gDD(k){return(gHD())[k]||{}}function sHb(k,id,v){const d=gHD();if(!d[k])d[k]={};d[k][id]=v;sHD(d)}
@@ -509,7 +512,7 @@ function gWLog(){return ld('g_wlog')||{}}function sWLog(d){sv('g_wlog',d)}
 function gBS(){return ld('g_body')||{}}function sBS(d){sv('g_body',d)}
 function gNotif(){return ld('g_notif')||{habitEnabled:true,habitTime:'21:00',workoutEnabled:true,workoutMins:15,progOL:true}}
 function sNotif(d){sv('g_notif',d)}
-function ds(d){return d.toISOString().slice(0,10)}
+function ds(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function fd(k){return new Date(k+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}
 function dcol(day){return DC[day===0?6:day-1]}
 function fmtTime(v){if(!v)return'';const[h,m]=v.split(':').map(Number);const ap=h>=12?'PM':'AM';return((h%12)||12)+':'+(m<10?'0':'')+m+' '+ap}
@@ -556,10 +559,10 @@ h+=`<div class="hr ${ck}${isSub?' sub-habit':''}" style="--hc:${x.color}" dragga
 if(!x.fixed)h+=`<div class="drag-handle"><span></span><span></span><span></span></div>`;
 if(x.type==='count'){
 h+=`<div class="hchk" onclick="event.stopPropagation();tCH('${x.id}',${x.target||0})" style="cursor:pointer;${isDone?'':'opacity:.4'}">${isDone?'✓':''}</div>`;
-h+=`<div class="hinf"><div class="hn">${x.name}</div><div class="hdsc" style="display:flex;align-items:center;gap:4px;margin-top:2px"><input type="number" value="${val||''}" placeholder="0" inputmode="decimal" onclick="event.stopPropagation()" onchange="sHb(vd,'${x.id}',parseFloat(this.value)||0);rH()" style="width:48px;padding:3px 5px;border-radius:4px;border:1px solid var(--muted);background:var(--card2);color:var(--text);font-family:system-ui;font-size:11px;font-weight:700;text-align:center"> / ${x.target} ${x.unit||''}</div></div>`}
+h+=`<div class="hinf"><div class="hn">${encH(x.name)}</div><div class="hdsc" style="display:flex;align-items:center;gap:4px;margin-top:2px"><input type="number" value="${val||''}" placeholder="0" inputmode="decimal" onclick="event.stopPropagation()" onchange="sHb(vd,'${x.id}',parseFloat(this.value)||0);rH()" style="width:48px;padding:3px 5px;border-radius:4px;border:1px solid var(--muted);background:var(--card2);color:var(--text);font-family:system-ui;font-size:11px;font-weight:700;text-align:center"> / ${x.target} ${encH(x.unit||'')}</div></div>`}
 else{
 h+=`<div class="hchk" onclick="event.stopPropagation();tH('${x.id}')">${ck?'✓':''}</div>`;
-h+=`<div class="hinf" onclick="tH('${x.id}')"><div class="hn">${x.name}</div><div class="hdsc">${x.desc}</div></div>`}
+h+=`<div class="hinf" onclick="tH('${x.id}')"><div class="hn">${encH(x.name)}</div><div class="hdsc">${encH(x.desc)}</div></div>`}
 h+=`<div class="hsk">${sk.cur>0?'🔥'+sk.cur:''}</div>`;
 if(!x.fixed)h+=`<div class="ebtn" onclick="event.stopPropagation();eHb('${x.id}')" style="font-size:9px;color:var(--muted);padding:4px;cursor:pointer">✏️</div>`;
 h+=`<div class="hdot"></div></div>`});
@@ -631,7 +634,7 @@ document.querySelectorAll('.hr').forEach(r=>{r.classList.remove('drag-over','dra
 
 function bG(hb){let h=`<div class="gs"><div class="gh"><div class="gtt">${t('hist')}</div><div class="gfs">`;
 ['7','30','90','180','365','year'].forEach(f=>{const lb={7:'1W',30:'1M',90:'3M',180:'6M',365:'12M'};h+=`<button class="gf ${gf===f?'a':''}" onclick="sGF('${f}')">${f==='year'?N.getFullYear():lb[f]}</button>`});
-h+='</div></div><div class="gl">';hb.forEach(x=>{h+=`<div class="gli ${lo.has(x.id)?'off':''}" onclick="tL('${x.id}')"><div class="gld" style="background:${x.color}"></div>${x.name.split(' ')[0]}</div>`});
+h+='</div></div><div class="gl">';hb.forEach(x=>{h+=`<div class="gli ${lo.has(x.id)?'off':''}" onclick="tL('${x.id}')"><div class="gld" style="background:${x.color}"></div>${encH(x.name.split(' ')[0])}</div>`});
 h+='</div>';const bars=gBr(hb),mx=hb.filter(x=>!lo.has(x.id)).length;h+='<div class="gwp"><div class="grw">';
 bars.forEach(b=>{h+=`<div class="gbw">`;if(b.c>0)h+=`<div class="gbv">${b.c}</div>`;h+=`<div class="gb" style="height:${mx?80:0}px">`;
 hb.filter(x=>!lo.has(x.id)).forEach(x=>{h+=`<div class="gsg" style="height:${mx?((hDone(x,b.d[x.id])?1:0)/mx)*80:0}px;background:${x.color}"></div>`});
@@ -907,9 +910,12 @@ setTimeout(()=>{const el=document.getElementById('gal-'+bvd);if(el){el.scrollInt
 
 function calcBMI(d,u){if(!d||!d.weight)return 0;const ht=getHt()||d.height;if(!ht)return 0;const wkg=u.w==='lb'?d.weight*0.4536:d.weight;const hm=u.h==='in'?ht*0.0254:(u.h==='ft'?ht*0.3048:ht/100);return hm>0?(wkg/(hm*hm)).toFixed(1):0}
 function delPhoto(){const bs=gBS();if(bs[bvd])bs[bvd].photo='';sBS(bs);autoRecalcNutr();rB()}
-function saveBod(){const bs=gBS(),u=getBU(),age=calcAge();bs[bvd]={weight:fromDisp(parseFloat(document.getElementById('bW').value)||0,'w'),
-height:getHt()||0,age:age||0,
-bf:parseFloat(document.getElementById('bF').value)||0,photo:(bs[bvd]||{}).photo||''};sBS(bs);autoRecalcNutr();rB()}
+function saveBod(){const bs=gBS(),u=getBU(),age=calcAge();
+const rawW=parseFloat(document.getElementById('bW').value);
+const rawBF=parseFloat(document.getElementById('bF').value);
+const wt=rawW>0&&rawW<1000?fromDisp(rawW,'w'):0;
+const bf=rawBF>0&&rawBF<100?rawBF:0;
+bs[bvd]={weight:wt,height:getHt()||0,age:age||0,bf,photo:(bs[bvd]||{}).photo||''};sBS(bs);autoRecalcNutr();rB()}
 function hPI(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(ev){
 const img=new Image();img.onload=function(){const c=document.createElement('canvas');const max=400;let w=img.width,h=img.height;
 if(w>max){h=h*(max/w);w=max}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
@@ -963,9 +969,9 @@ return`<div style="margin-bottom:10px"><div style="font-size:8px;font-weight:700
 
 // ═══ INJECT ═══
 function hWI(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(ev){try{const d=JSON.parse(ev.target.result);
-if(d.workouts&&Array.isArray(d.workouts)){sWL(d.workouts);rW();alert(t('imported')+' ('+d.workouts.length+'). Only workouts affected.')}else alert(t('badFile'))}catch{alert(t('badFile'))}};r.readAsText(f);e.target.value=''}
+if(d.workouts&&Array.isArray(d.workouts)&&d.workouts.every(w=>w&&typeof w.id==='string'&&Array.isArray(w.ex))){sWL(d.workouts);rW();alert(t('imported')+' ('+d.workouts.length+'). Only workouts affected.')}else alert(t('badFile'))}catch{alert(t('badFile'))}};r.readAsText(f);e.target.value=''}
 function hHI(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(ev){try{const d=JSON.parse(ev.target.result);
-if(d.habitList&&Array.isArray(d.habitList)){sHL(d.habitList);rH();alert('Habits imported! ('+d.habitList.length+'). Only habits affected.')}else alert(t('badFile'))}catch{alert(t('badFile'))}};r.readAsText(f);e.target.value=''}
+if(d.habitList&&Array.isArray(d.habitList)&&d.habitList.every(h=>h&&typeof h.id==='string'&&typeof h.name==='string')){sHL(d.habitList);rH();alert('Habits imported! ('+d.habitList.length+'). Only habits affected.')}else alert(t('badFile'))}catch{alert(t('badFile'))}};r.readAsText(f);e.target.value=''}
 function dlTpl(){const tpl=`You are a workout plan converter for the Pulseo fitness app. Convert the user's workout description into the exact JSON format below.\n\nIMPORTANT: This only affects workouts. Habits, body stats, and settings are NOT changed.\n\n═══ RULES ═══\n1. Read carefully\n2. If CRITICAL info missing, ask:\n   \"🔍 I need:\\n    • Which day(s)? (Mon=1,Tue=2,Wed=3,Thu=4,Fri=5,Sat=6,Sun=0)\\n    • [other missing info]\"\n3. When ready, provide result as a DOWNLOADABLE JSON FILE named \"pulseo-workout.json\"\n4. If your platform cannot create files, output raw JSON and say: \"Save this as pulseo-workout.json\"\n5. Smart defaults: 90s rest compounds, 60s isolation, 45s light\n6. Leave weight as \"\" if not specified\n\n═══ JSON FORMAT ═══\n{\"workouts\":[{\"id\":\"w_1\",\"day\":1,\"group\":\"Upper Body, Push\",\"label\":\"PUSH A\",\"loc\":\"GYM\",\"tm\":\"\",\"st\":\"8:00 AM\",\"notes\":\"\",\"ex\":[{\"n\":\"Bench Press\",\"s\":4,\"r\":\"8-12\",\"m\":\"Chest\",\"w\":60,\"rt\":90,\"bw\":false}]}]}\n\n═══ FIELDS ═══\nid: unique (w_1,w_2...) | day: 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat | group: comma-separated muscles | label: short name | loc: HOME/GYM | st: start time \"8:00 AM\" | notes: optional | ex: exercises array\nExercise: n=name s=sets(int) r=reps(string e.g. "12" or "8-12") m=muscle w=weight in kg(number, 0 if unknown) rt=rest in seconds between SETS(int) ert=rest in seconds between EXERCISES(int, 0=none) bw=bodyweight(bool, true for exercises using only body weight)\nGroups: Upper Body,Lower Body,Legs,Back,Chest,Arms,Shoulders,Abs/Core,Full Body,Cardio,Push,Pull\n\n═══ PASTE WORKOUT BELOW ═══\n`;
 dl('pulseo-workout-template.txt',tpl)}
 function dlHTpl(){const tpl=`You are a habit list converter for the Pulseo fitness app. Convert the user's habit description into the exact JSON format below.\n\nIMPORTANT: This only affects habits. Workouts, body stats, and settings are NOT changed.\n\n═══ RULES ═══\n1. Read carefully\n2. Habits can be YES/NO (type:\"check\") or COUNTABLE (type:\"count\" with a target number)\n3. Habits can have a \"parent\" field to be nested under another habit as a sub-habit\n4. NUTRITION AUTO-SYNC: Countable habits with names containing \"protein\", \"calorie\"/\"cal\", or \"fiber\" with unit \"g\" or \"kcal\" will AUTO-UPDATE from the nutrition food tracker. Include these if the user tracks nutrition.\n5. When ready, provide result as a DOWNLOADABLE JSON FILE named \"pulseo-habits.json\"\n6. If platform cannot create files, output raw JSON and say: \"Save as pulseo-habits.json\"\n\n═══ JSON FORMAT ═══\n{\"habitList\":[{\"id\":\"workout\",\"name\":\"Workout Complete\",\"desc\":\"Auto-ticks from workout plan\",\"color\":\"#FF6B35\",\"fixed\":true,\"type\":\"check\"},{\"id\":\"h_1\",\"name\":\"Wake Up at 7am\",\"desc\":\"Early bird\",\"color\":\"#FF4D4D\",\"type\":\"check\"},{\"id\":\"h_2\",\"name\":\"Drink 3L Water\",\"desc\":\"Stay hydrated\",\"color\":\"#4DA6FF\",\"type\":\"count\",\"target\":3,\"unit\":\"L\"},{\"id\":\"h_3\",\"name\":\"Eat 130g Protein\",\"desc\":\"Auto-syncs from nutrition tracker\",\"color\":\"#4DFF88\",\"type\":\"count\",\"target\":130,\"unit\":\"g\"},{\"id\":\"h_4\",\"name\":\"Morning Routine\",\"desc\":\"Parent habit\",\"color\":\"#FFB84D\",\"type\":\"check\"},{\"id\":\"h_5\",\"name\":\"Meditate 10min\",\"desc\":\"Sub-habit\",\"color\":\"#C77DFF\",\"type\":\"check\",\"parent\":\"h_4\"}]}\n\n═══ FIELDS ═══\nid: unique (h_1,h_2...) | name: habit name | desc: short description | color: hex color\ntype: \"check\" (yes/no toggle) or \"count\" (trackable number with target)\nFor count type only: target=number to reach, unit=measurement (L, g, min, hrs, etc)\nparent: (optional) id of parent habit — creates nested sub-habit display\n\nALWAYS include this as FIRST habit:\n{\"id\":\"workout\",\"name\":\"Workout Complete\",\"desc\":\"Auto-ticks from workout plan\",\"color\":\"#FF6B35\",\"fixed\":true,\"type\":\"check\"}\n\nColors: #FF4D4D #4DA6FF #4DFF88 #FFB84D #C77DFF #FF6B35 #FF79C6 #50FA7B #8BE9FD #F1FA8C #BD93F9 #44CFCB #FF5577 #88CC44 #CC66FF #FF9966 #66DDAA #DD4488 #7799FF #CCAA33\n\n═══ PASTE HABITS BELOW ═══\n`;
@@ -1100,7 +1106,8 @@ else txt+=`No habit data in this period.\n`;
 txt+=`\n═══ ANALYSE THIS DATA ═══\nPlease provide:\n1. Overall progress summary\n2. Habit consistency analysis\n3. Workout weight progression trends\n4. Body composition changes\n5. Top 3 things I'm doing well\n6. Top 3 areas to improve\n7. Specific actionable recommendations\n`;
 dl(`pulseo-ai-export-${range}-${TD}.txt`,txt);alert('Exported! Upload this file to Claude or ChatGPT for analysis.')}
 function hRe(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(ev){try{const d=JSON.parse(ev.target.result);
-if(d.habits)sHD(d.habits);if(d.habitList)sHL(d.habitList);if(d.workouts)sWL(d.workouts);if(d.wlog)sWLog(d.wlog);if(d.body)sBS(d.body);if(d.birthday)sBday(d.birthday);if(d.gender)sGender(d.gender);if(d.btype)sv('g_btype',d.btype);if(d.kj)sv('g_kj',d.kj);if(d.height)sHt(d.height);if(d.bunit)sBU(d.bunit);
+if(typeof d!=='object'||d===null){alert(t('badFile'));return}
+if(d.habits&&typeof d.habits==='object')sHD(d.habits);if(d.habitList&&Array.isArray(d.habitList))sHL(d.habitList);if(d.workouts&&Array.isArray(d.workouts))sWL(d.workouts);if(d.wlog&&typeof d.wlog==='object')sWLog(d.wlog);if(d.body&&typeof d.body==='object')sBS(d.body);if(d.birthday&&typeof d.birthday==='string')sBday(d.birthday);if(d.gender&&typeof d.gender==='string')sGender(d.gender);if(d.btype&&typeof d.btype==='string')sv('g_btype',d.btype);if(d.kj!==undefined)sv('g_kj',d.kj);if(d.height&&typeof d.height==='number')sHt(d.height);if(d.bunit&&typeof d.bunit==='object')sBU(d.bunit);
 if(d.settings){if(d.settings.theme){sv('g_theme',d.settings.theme);document.documentElement.setAttribute('data-theme',d.settings.theme==='light'?'light':'')}
 if(d.settings.lang){sv('g_lang',d.settings.lang);lang=d.settings.lang;['t1','t2','t5','t3','t4'].forEach((id,i)=>document.getElementById(id).textContent=t(['tab1','tab2','tab5','tab3','tab4'][i]))}
 if(d.settings.notif)sNotif(d.settings.notif);if(d.settings.retro){sv('g_retro',true);document.documentElement.setAttribute('data-retro','')}else{sv('g_retro',false);document.documentElement.removeAttribute('data-retro')}
@@ -1111,7 +1118,9 @@ setTimeout(()=>{const lb=ld('g_lb');if(!lb||lb!==TD)bk()},2500);
 
 // ═══ NOTIFICATIONS ═══
 function setupNotif(){const nf=gNotif();if(!nf.habitEnabled&&!nf.workoutEnabled)return;
-if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
+if(!('Notification' in window))return;
+if(Notification.permission==='default')Notification.requestPermission().catch(()=>{});
+if(Notification.permission==='denied')return;
 // Simple check every minute
 if(window._notifInt)clearInterval(window._notifInt);
 window._notifInt=setInterval(()=>{if(Notification.permission!=='granted')return;const now=new Date();const hm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
@@ -1591,7 +1600,8 @@ if(n.includes('(1 ')|| n.includes('(2 ')|| n.includes('(4 ')|| n.includes('(6 ')
 if(f.cat==='drink')return{wt:250,label:'1 Glass (250ml)'};
 if(f.cat==='fruit')return{wt:150,label:'1 Serving'};
 return{wt:100,label:'100g'}}
-function getAllFoods(){return [...FOOD_DB,...gCFoods()]}
+let _foodCache=null,_cfLen=-1,_srchRes=[],_emSrchRes=[],_curFood=null;
+function getAllFoods(){const n=gCFoods().length;if(!_foodCache||n!==_cfLen){_foodCache=[...FOOD_DB,...gCFoods()];_cfLen=n}return _foodCache}
 function dayMeals(d){return(gMeals()[d]||[]);}
 function dayTotals(d){const m=dayMeals(d);return{cal:m.reduce((s,x)=>s+x.cal,0),p:m.reduce((s,x)=>s+x.p,0),c:m.reduce((s,x)=>s+x.c,0),f:m.reduce((s,x)=>s+x.f,0),fb:m.reduce((s,x)=>s+x.fb,0)}}
 function calcTDEE(){const age=calcAge(),ht=getHt(),g=gGender();if(!age||!ht||!g)return null;
@@ -1640,11 +1650,11 @@ const regMeals=meals.map((m,i)=>({...m,_i:i})).filter(m=>!m.manual).sort((a,b)=>
 const manMeal=meals.find(m=>m.manual);const manIdx=meals.findIndex(m=>m.manual);
 if(regMeals.length||manMeal){h+=`<div class="sub" style="margin-top:10px">LOGGED (${regMeals.length}${manMeal?' +1 adj':''})</div>`;
 regMeals.forEach(m=>{const mp=[];if(track.includes('cal'))mp.push(Math.round(m.cal)+'cal');if(track.includes('p'))mp.push(Math.round(m.p)+'p');if(track.includes('c'))mp.push(Math.round(m.c)+'c');if(track.includes('f'))mp.push(Math.round(m.f)+'f');if(track.includes('fb'))mp.push(Math.round(m.fb||0)+'fb');
-h+=`<div class="bs-card" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;margin-bottom:2px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:10px;font-weight:700">${m.n}</span>${m.t?`<span style="font-size:7px;color:var(--muted);font-weight:600">🕐 ${m.t}</span>`:''}</div><div style="font-size:7px;color:var(--dim)">${m.wt}g · ${mp.join(' · ')}</div></div><div style="display:flex;gap:2px;flex-shrink:0"><span style="cursor:pointer;font-size:9px;opacity:.5" onclick="editMeal(${m._i})">✏️</span><span style="cursor:pointer;font-size:9px;opacity:.5" onclick="delMeal(${m._i})">🗑️</span></div></div>`});
+h+=`<div class="bs-card" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;margin-bottom:2px"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:4px"><span style="font-size:10px;font-weight:700">${encH(m.n)}</span>${m.t?`<span style="font-size:7px;color:var(--muted);font-weight:600">🕐 ${m.t}</span>`:''}</div><div style="font-size:7px;color:var(--dim)">${m.wt}g · ${mp.join(' · ')}</div></div><div style="display:flex;gap:2px;flex-shrink:0"><span style="cursor:pointer;font-size:9px;opacity:.5" onclick="editMeal(${m._i})">✏️</span><span style="cursor:pointer;font-size:9px;opacity:.5" onclick="delMeal(${m._i})">🗑️</span></div></div>`});
 // Manual adjustment always at bottom
 if(manMeal){const mp2=[];const fk=k=>{const v=Math.round(manMeal[k]||0);return v===0?'':v>0?'+'+v:String(v)};
 if(track.includes('cal')&&manMeal.cal)mp2.push(fk('cal')+'cal');if(track.includes('p')&&manMeal.p)mp2.push(fk('p')+'p');if(track.includes('c')&&manMeal.c)mp2.push(fk('c')+'c');if(track.includes('f')&&manMeal.f)mp2.push(fk('f')+'f');if(track.includes('fb')&&manMeal.fb)mp2.push(fk('fb')+'fb');
-h+=`<div class="bs-card" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;margin-bottom:2px;margin-top:4px;border:1px dashed var(--acc);background:color-mix(in srgb,var(--acc) 5%,var(--card))"><div><div style="font-size:10px;font-weight:700;color:var(--acc)">${manMeal.n}</div><div style="font-size:7px;color:var(--dim)">${mp2.length?mp2.join(' · '):'No adjustments'}</div></div><span style="cursor:pointer;font-size:10px" onclick="delMeal(${manIdx})">🗑️</span></div>`}}
+h+=`<div class="bs-card" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;margin-bottom:2px;margin-top:4px;border:1px dashed var(--acc);background:color-mix(in srgb,var(--acc) 5%,var(--card))"><div><div style="font-size:10px;font-weight:700;color:var(--acc)">${encH(manMeal.n)}</div><div style="font-size:7px;color:var(--dim)">${mp2.length?mp2.join(' · '):'No adjustments'}</div></div><span style="cursor:pointer;font-size:10px" onclick="delMeal(${manIdx})">🗑️</span></div>`}}
 // Nutrition goals setup
 h+=`<div class="sub" style="margin-top:12px">GOALS</div>`;
 h+=`<div class="bs-card"><div style="display:flex;gap:4px;flex-wrap:wrap">`;
@@ -1679,35 +1689,35 @@ h+=`<div class="opr">${tr.includes('fb')?'<input id="cfFb" type="number" placeho
 h+=`<div class="mbb"><button class="btn bs" onclick="cM()">Cancel</button><button class="btn bp" onclick="addCustomFood()">Add</button></div></div>`;
 document.getElementById('mD').innerHTML=h;document.getElementById('mB').classList.add('show');
 setTimeout(()=>document.getElementById('nSrch')?.focus(),200)}
-function nSearch(q){const res=document.getElementById('nRes');if(!res)return;if(q.length<1){res.innerHTML='';return}
-const ql=q.toLowerCase();const all=getAllFoods().filter(f=>f.n.toLowerCase().includes(ql)).slice(0,20);const tr=gNTrack();
-let h='';all.forEach(f=>{const parts=[];if(tr.includes('cal'))parts.push(f.cal+'cal');if(tr.includes('p'))parts.push(f.p+'p');if(tr.includes('c'))parts.push(f.c+'c');if(tr.includes('f'))parts.push(f.f+'f');if(tr.includes('fb'))parts.push(f.fb+'fb');
-h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px solid var(--muted);cursor:pointer" onclick="selFood('${f.n.replace(/'/g,"\\'")}')"><div><div style="font-size:10px;font-weight:700">${f.n}</div><div style="font-size:7px;color:var(--dim)">${parts.join(' · ')} per 100g</div></div><span style="font-size:14px">+</span></div>`});
-if(!all.length)h=`<div style="font-size:9px;color:var(--dim);text-align:center;padding:10px">No results</div>`;
+function nSearch(q){const res=document.getElementById('nRes');if(!res)return;if(q.length<1){res.innerHTML='';_srchRes=[];return}
+const ql=q.toLowerCase();_srchRes=getAllFoods().filter(f=>f.n.toLowerCase().includes(ql)).slice(0,20);const tr=gNTrack();
+let h='';_srchRes.forEach((f,i)=>{const parts=[];if(tr.includes('cal'))parts.push(f.cal+'cal');if(tr.includes('p'))parts.push(f.p+'p');if(tr.includes('c'))parts.push(f.c+'c');if(tr.includes('f'))parts.push(f.f+'f');if(tr.includes('fb'))parts.push(f.fb+'fb');
+h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px solid var(--muted);cursor:pointer" onclick="selFood(${i})"><div><div style="font-size:10px;font-weight:700">${encH(f.n)}</div><div style="font-size:7px;color:var(--dim)">${parts.join(' · ')} per 100g</div></div><span style="font-size:14px">+</span></div>`});
+if(!_srchRes.length)h=`<div style="font-size:9px;color:var(--dim);text-align:center;padding:10px">No results</div>`;
 res.innerHTML=h}
-function selFood(name){const f=getAllFoods().find(x=>x.n===name);if(!f)return;const tr=gNTrack();const sv2=getFoodServing(f);
+function selFood(i){const f=_srchRes[i];if(!f)return;_curFood=f;const tr=gNTrack();const sv2=getFoodServing(f);
 const parts=[];if(tr.includes('cal'))parts.push(f.cal+'cal');if(tr.includes('p'))parts.push(f.p+'g protein');if(tr.includes('c'))parts.push(f.c+'g carbs');if(tr.includes('f'))parts.push(f.f+'g fat');if(tr.includes('fb'))parts.push(f.fb+'g fiber');
-let h=`<h3>${f.n}</h3>`;
+let h=`<h3>${encH(f.n)}</h3>`;
 h+=`<div style="font-size:9px;color:var(--dim);margin-bottom:8px">${parts.join(' · ')} — per 100g</div>`;
-h+=`<div style="font-size:8px;color:var(--acc);margin-bottom:4px">📏 Suggested: ${sv2.label} (${sv2.wt}g)</div>`;
-h+=`<label>WEIGHT (g)</label><input id="nWt" type="number" value="${sv2.wt}" inputmode="numeric" oninput="updFoodPreview('${name.replace(/'/g,"\\'")}')">`;
+h+=`<div style="font-size:8px;color:var(--acc);margin-bottom:4px">📏 Suggested: ${encH(sv2.label)} (${sv2.wt}g)</div>`;
+h+=`<label>WEIGHT (g)</label><input id="nWt" type="number" value="${sv2.wt}" inputmode="numeric" oninput="updFoodPreview()">`;
 h+=`<div id="nPrev" style="margin-top:6px;padding:8px;background:var(--card2);font-size:10px;font-weight:700">${fmtFoodPrev(f,sv2.wt)}</div>`;
-h+=`<div class="mbb"><button class="btn bs" onclick="oNMeal()">Back</button><button class="btn bp" onclick="logFood('${name.replace(/'/g,"\\'")}')">Log Food</button></div>`;
+h+=`<div class="mbb"><button class="btn bs" onclick="oNMeal()">Back</button><button class="btn bp" onclick="logFood()">Log Food</button></div>`;
 document.getElementById('mD').innerHTML=h;document.getElementById('mB').classList.add('show')}
 function fmtFoodPrev(f,wt){const tr=gNTrack(),m=wt/100,p=[];if(tr.includes('cal'))p.push(Math.round(f.cal*m)+' cal');if(tr.includes('p'))p.push((f.p*m).toFixed(1)+'g P');if(tr.includes('c'))p.push((f.c*m).toFixed(1)+'g C');if(tr.includes('f'))p.push((f.f*m).toFixed(1)+'g F');if(tr.includes('fb'))p.push((f.fb*m).toFixed(1)+'g Fb');return p.join(' · ')}
-function updFoodPreview(name){const f=getAllFoods().find(x=>x.n===name);if(!f)return;
+function updFoodPreview(){if(!_curFood)return;
 const wt=parseFloat(document.getElementById('nWt')?.value)||100;
-document.getElementById('nPrev').innerHTML=fmtFoodPrev(f,wt)}
-function logFood(name){const f=getAllFoods().find(x=>x.n===name);if(!f)return;
+document.getElementById('nPrev').innerHTML=fmtFoodPrev(_curFood,wt)}
+function logFood(){if(!_curFood)return;
 const wt=parseFloat(document.getElementById('nWt')?.value)||100;const m=wt/100;
 const ml=gMeals();if(!ml[nvd])ml[nvd]=[];
-ml[nvd].push({n:f.n,wt:Math.round(wt),cal:+(f.cal*m).toFixed(1),p:+(f.p*m).toFixed(1),c:+(f.c*m).toFixed(1),f:+(f.f*m).toFixed(1),fb:+(f.fb*m).toFixed(1),t:new Date().toTimeString().slice(0,5)});
+ml[nvd].push({n:_curFood.n,wt:Math.round(wt),cal:+(_curFood.cal*m).toFixed(1),p:+(_curFood.p*m).toFixed(1),c:+(_curFood.c*m).toFixed(1),f:+(_curFood.f*m).toFixed(1),fb:+(_curFood.fb*m).toFixed(1),t:new Date().toTimeString().slice(0,5)});
 sMeals(ml);syncNutrHabits();cM();rN()}
 function delMeal(i){const ml=gMeals();if(ml[nvd]){ml[nvd].splice(i,1);sMeals(ml);syncNutrHabits();rN()}}
 function editMeal(i){const ml=gMeals();const meals=ml[nvd]||[];const m=meals[i];if(!m||m.manual)return;
 const tr=gNTrack();const curTime=m.t||'';
 let h=`<h3>Edit Meal</h3>`;
-h+=`<label>FOOD</label><div style="display:flex;gap:4px;align-items:center;margin-bottom:6px"><input id="emName" value="${m.n}" style="flex:1" readonly><button class="btn bs" style="font-size:8px;padding:5px 8px" onclick="editMealChangeFood(${i})">Change</button></div>`;
+h+=`<label>FOOD</label><div style="display:flex;gap:4px;align-items:center;margin-bottom:6px"><input id="emName" value="${encA(m.n)}" style="flex:1" readonly><button class="btn bs" style="font-size:8px;padding:5px 8px" onclick="editMealChangeFood(${i})">Change</button></div>`;
 h+=`<label>TIME EATEN</label><input id="emTime" type="time" value="${curTime}" style="margin-bottom:6px">`;
 h+=`<label>WEIGHT (g)</label><input id="emWt" type="number" value="${m.wt}" inputmode="numeric" oninput="editMealPreview(${i})">`;
 h+=`<div id="emPrev" style="margin-top:6px;padding:8px;background:var(--card2);font-size:10px;font-weight:700">${fmtMealNutr(m)}</div>`;
@@ -1732,14 +1742,14 @@ let h=`<h3>Change Food</h3><input id="emSrch" placeholder="Search foods..." onin
 h+=`<div id="emRes" style="max-height:300px;overflow-y:auto"></div>`;
 h+=`<div class="mbb"><button class="btn bs" onclick="editMeal(${i})">Back</button></div>`;
 oM(h);setTimeout(()=>document.getElementById('emSrch')?.focus(),200)}
-function editMealSearch(q,i){const res=document.getElementById('emRes');if(!res)return;if(q.length<1){res.innerHTML='';return}
-const ql=q.toLowerCase();const all=getAllFoods().filter(f=>f.n.toLowerCase().includes(ql)).slice(0,20);const tr=gNTrack();
-let h='';all.forEach(f=>{const parts=[];if(tr.includes('cal'))parts.push(f.cal+'cal');if(tr.includes('p'))parts.push(f.p+'p');if(tr.includes('c'))parts.push(f.c+'c');if(tr.includes('f'))parts.push(f.f+'f');if(tr.includes('fb'))parts.push(f.fb+'fb');
-h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px solid var(--muted);cursor:pointer" onclick="applyMealChange(${i},'${f.n.replace(/'/g,"\\'")}')"><div><div style="font-size:10px;font-weight:700">${f.n}</div><div style="font-size:7px;color:var(--dim)">${parts.join(' · ')} per 100g</div></div><span style="font-size:14px">→</span></div>`});
-if(!all.length)h=`<div style="font-size:9px;color:var(--dim);text-align:center;padding:10px">No results</div>`;
+function editMealSearch(q,i){const res=document.getElementById('emRes');if(!res)return;if(q.length<1){res.innerHTML='';_emSrchRes=[];return}
+const ql=q.toLowerCase();_emSrchRes=getAllFoods().filter(f=>f.n.toLowerCase().includes(ql)).slice(0,20);const tr=gNTrack();
+let h='';_emSrchRes.forEach((f,fi)=>{const parts=[];if(tr.includes('cal'))parts.push(f.cal+'cal');if(tr.includes('p'))parts.push(f.p+'p');if(tr.includes('c'))parts.push(f.c+'c');if(tr.includes('f'))parts.push(f.f+'f');if(tr.includes('fb'))parts.push(f.fb+'fb');
+h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px solid var(--muted);cursor:pointer" onclick="applyMealChange(${i},${fi})"><div><div style="font-size:10px;font-weight:700">${encH(f.n)}</div><div style="font-size:7px;color:var(--dim)">${parts.join(' · ')} per 100g</div></div><span style="font-size:14px">→</span></div>`});
+if(!_emSrchRes.length)h=`<div style="font-size:9px;color:var(--dim);text-align:center;padding:10px">No results</div>`;
 res.innerHTML=h}
-function applyMealChange(i,newName){const ml=gMeals();const meals=ml[nvd]||[];const m=meals[i];if(!m)return;
-const f=getAllFoods().find(x=>x.n===newName);if(!f)return;
+function applyMealChange(i,fi){const ml=gMeals();const meals=ml[nvd]||[];const m=meals[i];if(!m)return;
+const f=_emSrchRes[fi];if(!f)return;
 const sv2=getFoodServing(f);const wt=sv2.wt;const mult=wt/100;
 m.n=f.n;m.wt=wt;m.cal=+(f.cal*mult).toFixed(1);m.p=+(f.p*mult).toFixed(1);m.c=+(f.c*mult).toFixed(1);m.f=+(f.f*mult).toFixed(1);m.fb=+(f.fb*mult).toFixed(1);
 ml[nvd]=meals;sMeals(ml);syncNutrHabits();editMeal(i)}
@@ -1748,7 +1758,7 @@ const cal=parseFloat(document.getElementById('cfCal')?.value)||0;const p=parseFl
 const cc=parseFloat(document.getElementById('cfC')?.value)||0;const ff=parseFloat(document.getElementById('cfF')?.value)||0;
 const fb=parseFloat(document.getElementById('cfFb')?.value)||0;const wt=parseFloat(document.getElementById('cfWt')?.value)||100;
 // Save to custom foods (per 100g)
-const m=100/wt;const cf=gCFoods();cf.push({n,cal:+(cal*m).toFixed(1),p:+(p*m).toFixed(1),c:+(cc*m).toFixed(1),f:+(ff*m).toFixed(1),fb:+(fb*m).toFixed(1),cat:'custom'});sCFoods(cf);
+const m=100/wt;const cf=gCFoods();cf.push({n,cal:+(cal*m).toFixed(1),p:+(p*m).toFixed(1),c:+(cc*m).toFixed(1),f:+(ff*m).toFixed(1),fb:+(fb*m).toFixed(1),cat:'custom'});sCFoods(cf);_foodCache=null;
 // Also log it
 const ml=gMeals();if(!ml[nvd])ml[nvd]=[];
 ml[nvd].push({n,wt:Math.round(wt),cal:+cal.toFixed(1),p:+p.toFixed(1),c:+cc.toFixed(1),f:+ff.toFixed(1),fb:+fb.toFixed(1),t:new Date().toTimeString().slice(0,5)});
